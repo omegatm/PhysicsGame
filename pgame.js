@@ -54,20 +54,59 @@ class Lv1 extends Phaser.Scene {
     preload(){
         this.load.image('flag', './assets/flag1.png');
         this.load.image('ball', './assets/ball.png');
-        this.load.image('floor1', './assets/floor1.png');
+        this.load.atlas('sheet', 'assets/Floors.png', 'assets/Floors.json');
+        this.load.json('shapes','./assets/Floor.json');
     }
     create() {
+        let shapes=this.cache.json.get("shapes");
+        this.matter.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
         this.cameras.main.setBackgroundColor('#FFFFFF');
-        let flag=this.add.sprite(this.game.config.width/2-100, this.game.config.height/2, 'flag').setOrigin(.5,.5)
-        let ball=this.add.physics.sprite(this.game.config.width/2, this.game.config.height/2, 'ball');
-        ball.setGravityY(100);
- 
-        // let groundX=this.sys.game.config.width/2;
-        // let groundY=this.sys.game.config.height*.95;
-        // let ground=this.physics.add.sprite(groundX,groundY,"floor1");
-        // ground.displayWidth=this.sys.game.config.width;
-        // this.physics.add.collider(ball, ground);
-        // ground.setImmovable();
+        let flag=this.add.sprite(this.game.config.width*.8, this.game.config.height*.7, 'flag').setOrigin(.5,.5)
+        let ball=this.matter.add.image(this.game.config.width/2, this.game.config.height/2, 'ball');
+        ball.setBody({
+            type:'circle',
+            radius:33
+        });
+        ball.setBounce(.5);
+        ball.setInteractive();
+        ball.setFrictionAir(0.01); 
+        this.input.setDraggable(ball);
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            //gameObject.setPosition(dragX, dragY);
+            const timer = this.time.addEvent({
+                delay: 500,
+                callback: this.input.emit('dragend'),
+                callbackScope: this,
+                loop: false 
+              });
+        });
+
+
+    this.input.on('dragend', (pointer, gameObject) => {
+
+      const velocityX = pointer.velocity.x * .1; 
+      const velocityY = pointer.velocity.y * .1; 
+
+      gameObject.setVelocity(velocityX, velocityY);
+    });
+        let groundX = this.sys.game.config.width / 2;
+        let groundY = this.sys.game.config.height * 0.95;
+        let ground = this.matter.add.sprite(groundX, groundY,'sheet', 'floor1.png',{shape:shapes.floor1});
+        //ground.setBody({type:'fromVerts',verts: shapes.floor1});
+       
+        ground.displayWidth = this.sys.game.config.width;
+
+    
+        // ground.setBody({
+        //     type: 'fromVerts',
+        //     verts: ground.frame.vertices,
+        //     flagInternal: true
+        //   });
+          
+        ground.setStatic(true);
+
+    
+        //this.matter.add.collider(ball, ground);
        
        
     }
@@ -102,11 +141,15 @@ const game = new Phaser.Game({
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: 1920,
         height: 1080,
-        physics:{
-            default:'arcade',
-            arcade:{
-                debug:true
-            }
+        
+    },
+    physics:{
+        default:'matter',
+        matter:{
+            gravity:{
+               y:.9
+            },
+            debug:true
         }
     },
     scene: [Intro, Lv1],
