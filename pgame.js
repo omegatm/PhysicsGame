@@ -50,6 +50,8 @@ class Intro extends Phaser.Scene {
 class Lv1 extends Phaser.Scene {
     constructor() {
         super('lv1')
+        let ball=null;
+        let flag=null;
     }
     preload(){
         this.load.image('flag', './assets/flag1.png');
@@ -59,26 +61,27 @@ class Lv1 extends Phaser.Scene {
     }
     create() {
         let shapes=this.cache.json.get("shapes");
+        this.add.text(this.game.config.width * 0.2, this.game.config.height * 0.3, "Flick The Ball with the Mouse to reach the goal!").setColor('#00ff00').setFontSize(30);
         this.matter.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
         this.cameras.main.setBackgroundColor('#FFFFFF');
-        let flag=this.add.sprite(this.game.config.width*.8, this.game.config.height*.7, 'flag').setOrigin(.5,.5)
-        let ball=this.matter.add.image(this.game.config.width/2, this.game.config.height/2, 'ball');
-        ball.setBody({
+        this.flag=this.matter.add.sprite(this.game.config.width*.8, this.game.config.height*.73, 'flag').setOrigin(.5,.5).setStatic(true);
+        this.ball=this.matter.add.image(this.game.config.width*.1, this.game.config.height/2, 'ball');
+        this.ball.setBody({
             type:'circle',
             radius:33
         });
-        ball.setBounce(.5);
-        ball.setInteractive();
-        ball.setFrictionAir(0.01); 
-        this.input.setDraggable(ball);
+        this.ball.setBounce(.5);
+        this.ball.setInteractive();
+        this.ball.setFrictionAir(0.01); 
+        this.input.setDraggable(this.ball);
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
             //gameObject.setPosition(dragX, dragY);
-            const timer = this.time.addEvent({
-                delay: 500,
-                callback: this.input.emit('dragend'),
-                callbackScope: this,
-                loop: false 
-              });
+            // const timer = this.time.addEvent({
+            //     delay: 500,
+            //     callback: this.input.emit('dragend'),
+            //     callbackScope: this,
+            //     loop: false 
+            //   });
         });
 
 
@@ -108,32 +111,209 @@ class Lv1 extends Phaser.Scene {
     
         //this.matter.add.collider(ball, ground);
        
+        this.matter.world.on('collisionstart', (event) => {
+            event.pairs.forEach((pair) => {
+              if (
+                (pair.bodyA === this.ball.body && pair.bodyB === this.flag.body) ||
+                (pair.bodyA === this.flag.body && pair.bodyB === this.ball.body)
+              ) {
+                this.scene.start('lv2');
+                
+              }
+            });
+          });
+        
        
     }
     
-    update()
-    {
-    
+    update() {
+       
+       
+      }
     }
-}
 
-    
+
 
 
 class Lv2 extends Phaser.Scene {
     constructor() {
         super('lv2')
+        let ball=null;
+        let flag=null;
     }
-}
+    preload(){
+        this.load.image('flag', './assets/flag1.png');
+        this.load.image('ball', './assets/ball.png');
+        this.load.atlas('sheet', 'assets/Floors.png', 'assets/Floors.json');
+        this.load.json('shapes','./assets/Floor.json');
+    }
+    create() {
+        let shapes=this.cache.json.get("shapes");
+        this.add.text(this.game.config.width * 0.4, this.game.config.height * 0.3, "Flick The Ball with the Mouse to reach the goal!").setColor('#00ff00').setFontSize(30);
+        this.matter.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
+        this.cameras.main.setBackgroundColor('#FFFFFF');
+        this.flag=this.matter.add.sprite(this.game.config.width*.8, this.game.config.height*.4, 'flag').setOrigin(.5,.5).setStatic(true);
+        this.ball=this.matter.add.image(this.game.config.width*.1, this.game.config.height*.8, 'ball');
+        this.ball.setBody({
+            type:'circle',
+            radius:33
+        });
+        this.ball.setBounce(.5);
+        this.ball.setInteractive();
+        this.ball.setFrictionAir(0.01); 
+        this.input.setDraggable(this.ball);
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            //gameObject.setPosition(dragX, dragY);
+            // const timer = this.time.addEvent({
+            //     delay: 500,
+            //     callback: this.input.emit('dragend'),
+            //     callbackScope: this,
+            //     loop: false 
+            //   });
+        });
+
+
+    this.input.on('dragend', (pointer, gameObject) => {
+
+      const velocityX = pointer.velocity.x * .1; 
+      const velocityY = pointer.velocity.y * .1; 
+
+      gameObject.setVelocity(velocityX, velocityY);
+    });
+        let groundX = this.sys.game.config.width / 2-315;
+        let groundY = this.sys.game.config.height * 0.5;
+        let ground = this.matter.add.sprite(groundX, groundY,'sheet', 'floor2.png',{shape:shapes.floor2});
+        //ground.setBody({type:'fromVerts',verts: shapes.floor1});
+       
+        ground.displayWidth = this.sys.game.config.width;
+
+    
+        // ground.setBody({
+        //     type: 'fromVerts',
+        //     verts: ground.frame.vertices,
+        //     flagInternal: true
+        //   });
+          
+        ground.setStatic(true);
+
+    
+        //this.matter.add.collider(ball, ground);
+       
+        this.matter.world.on('collisionstart', (event) => {
+            event.pairs.forEach((pair) => {
+              if (
+                (pair.bodyA === this.ball.body && pair.bodyB === this.flag.body) ||
+                (pair.bodyA === this.flag.body && pair.bodyB === this.ball.body)
+              ) {
+                this.scene.start('lv3');
+                
+              }
+            });
+          });
+        
+       
+    }
+    
+    update() {
+       
+       
+      }
+    }
 class Lv3 extends Phaser.Scene {
     constructor() {
         super('lv3')
+        let ball=null;
+        let flag=null;
     }
+    preload(){
+        this.load.image('flag', './assets/flag1.png');
+        this.load.image('ball', './assets/ball.png');
+        this.load.atlas('sheet', 'assets/Floors.png', 'assets/Floors.json');
+        this.load.json('shapes','./assets/Floor.json');
+    }
+    create() {
+        let shapes=this.cache.json.get("shapes");
+        this.add.text(this.game.config.width * 0.2, this.game.config.height * 0.3, "Flick The Ball with the Mouse to reach the goal!").setColor('#00ff00').setFontSize(30);
+        this.matter.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
+        this.cameras.main.setBackgroundColor('#FFFFFF');
+        this.flag=this.matter.add.sprite(this.game.config.width*.8, this.game.config.height*.65, 'flag').setOrigin(.5,.5).setStatic(true);
+        this.ball=this.matter.add.image(this.game.config.width*.1, this.game.config.height/2, 'ball');
+        this.ball.setBody({
+            type:'circle',
+            radius:33
+        });
+        this.ball.setBounce(.5);
+        this.ball.setInteractive();
+        this.ball.setFrictionAir(0.01); 
+        this.input.setDraggable(this.ball);
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            //gameObject.setPosition(dragX, dragY);
+            // const timer = this.time.addEvent({
+            //     delay: 500,
+            //     callback: this.input.emit('dragend'),
+            //     callbackScope: this,
+            //     loop: false 
+            //   });
+        });
+
+
+    this.input.on('dragend', (pointer, gameObject) => {
+
+      const velocityX = pointer.velocity.x * .1; 
+      const velocityY = pointer.velocity.y * .1; 
+
+      gameObject.setVelocity(velocityX, velocityY);
+    });
+        let groundX = this.sys.game.config.width / 2;
+        let groundY = this.sys.game.config.height * 0.95;
+        let ground = this.matter.add.sprite(groundX, groundY,'sheet', 'floor3.png',{shape:shapes.floor3});
+        //ground.setBody({type:'fromVerts',verts: shapes.floor1});
+       
+        ground.displayWidth = this.sys.game.config.width;
+
+    
+        // ground.setBody({
+        //     type: 'fromVerts',
+        //     verts: ground.frame.vertices,
+        //     flagInternal: true
+        //   });
+          
+        ground.setStatic(true);
+
+    
+        //this.matter.add.collider(ball, ground);
+       
+        this.matter.world.on('collisionstart', (event) => {
+            event.pairs.forEach((pair) => {
+              if (
+                (pair.bodyA === this.ball.body && pair.bodyB === this.flag.body) ||
+                (pair.bodyA === this.flag.body && pair.bodyB === this.ball.body)
+              ) {
+                this.scene.start('outro');
+                
+              }
+            });
+          });
+        
+       
+    }
+    
+    update() {
+       
+       
+      }
 }
 class Outro extends Phaser.Scene {
     constructor() {
         super('outro')
     }
+    create()
+    {
+        this.add.text(1920/2-250,540, "YOU DID IT!").setFontSize(60).setColor('#FFFFFF');
+        this.cameras.main.setBackgroundColor(0x000000);
+        
+    }
+
 }
 const game = new Phaser.Game({
     scale: {
@@ -149,9 +329,9 @@ const game = new Phaser.Game({
             gravity:{
                y:.9
             },
-            debug:true
+            debug:false
         }
     },
-    scene: [Intro, Lv1],
+    scene: [Intro, Lv1,Lv2,Lv3,Outro],
     title: "physics Game",
 });
